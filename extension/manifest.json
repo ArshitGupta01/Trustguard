@@ -12,6 +12,8 @@
     "*://*.amazon.com/*",
     "*://*.amazon.in/*",
     "*://*.flipkart.com/*",
+    "*://play.google.com/*",
+    "*://*.myntra.com/*",
     "http://localhost:8000/*",
     "https://api.trustguard.io/*"
   ],
@@ -24,7 +26,9 @@
       "matches": [
         "*://*.amazon.com/*",
         "*://*.amazon.in/*",
-        "*://*.flipkart.com/*"
+        "*://*.flipkart.com/*",
+        "*://play.google.com/*",
+        "*://*.myntra.com/*"
       ],
       "js": [
         "content.js"

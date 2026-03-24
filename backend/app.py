@@ -1,6 +1,7 @@
 # Detection of Fake Reviews & Rating Manipulation: Backend API
 # FastAPI + Heuristic-Based Analysis
 
+from __future__ import annotations
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -163,7 +164,7 @@ class TextAnalyzer:
         if words == 0:
             return 10.0
 
-        density = matches / max(words / 20, 1)  # specifics per ~20 words
+        density = float(matches) / max(float(words) / 20.0, 1.0)  # specifics per ~20 words
 
         if density >= 2.0:
             return 95.0
@@ -198,17 +199,17 @@ class TextAnalyzer:
     def _originality_score(self, text: str) -> float:
         """Detect generic/templated language. More generics = lower score."""
         text_lower = text.lower()
-        generic_hits = 0
+        generic_hits: float = 0.0
         for phrase in GENERIC_PHRASES:
             if phrase in text_lower:
-                generic_hits += 1
+                generic_hits += 1.0
 
         words = len(text.split())
         if words == 0:
             return 20.0
 
         # Normalize by review length
-        generic_density = generic_hits / max(words / 15, 1)
+        generic_density = float(generic_hits) / max(float(words) / 15.0, 1.0)
 
         if generic_hits == 0:
             return 92.0  # No generic phrases at all
@@ -223,8 +224,8 @@ class TextAnalyzer:
 
     def _suspicion_score(self, text: str) -> tuple:
         """Detect suspicious patterns. Returns (score, flags)."""
-        flags = []
-        penalty = 0
+        flags: List[str] = []
+        penalty: float = 0.0
 
         for pattern in SUSPICIOUS_PATTERNS:
             # The all-caps pattern must NOT use IGNORECASE
@@ -234,7 +235,7 @@ class TextAnalyzer:
                 match = re.search(pattern, text, re.IGNORECASE)
 
             if match:
-                penalty += 15
+                penalty += 15.0
                 if "!" in pattern:
                     flags.append("Excessive punctuation detected")
                 elif "buy" in pattern or "purchase" in pattern:
@@ -247,7 +248,7 @@ class TextAnalyzer:
         # Check emoji density
         emoji_count = len(re.findall(r'[\U0001F600-\U0001F9FF]', text))
         if emoji_count > 5:
-            penalty += 10
+            penalty += 10.0
             flags.append("Excessive emoji usage")
 
         score = max(5, 95 - penalty)
@@ -302,8 +303,8 @@ class CrossReviewAnalyzer:
             words = set(re.findall(r'[a-z]+', text))
             fingerprints.append(words)
 
-        duplicate_pairs = 0
-        total_pairs = 0
+        duplicate_pairs: float = 0.0
+        total_pairs: float = 0.0
 
         for i in range(len(fingerprints)):
             for j in range(i + 1, len(fingerprints)):
@@ -311,14 +312,14 @@ class CrossReviewAnalyzer:
                 if not fingerprints[i] or not fingerprints[j]:
                     continue
                 intersection = len(fingerprints[i] & fingerprints[j])
-                union = len(fingerprints[i] | fingerprints[j])
-                if union > 0 and intersection / union > 0.7:
-                    duplicate_pairs += 1
+                union: float = float(len(fingerprints[i] | fingerprints[j]))
+                if union > 0.0 and float(intersection) / union > 0.7:
+                    duplicate_pairs += 1.0
 
         if total_pairs == 0:
             return 80.0
 
-        dup_ratio = duplicate_pairs / total_pairs
+        dup_ratio = float(duplicate_pairs) / float(max(total_pairs, 1.0))
 
         if duplicate_pairs > 0:
             flags.append(f"{duplicate_pairs} near-duplicate review pair(s) found")
@@ -340,18 +341,18 @@ class CrossReviewAnalyzer:
         if not ratings:
             return 60.0
 
-        rating_counts = Counter(ratings)
-        total = len(ratings)
+        rating_counts: Dict[int, int] = dict(Counter(ratings))
+        total: int = len(ratings)
 
-        five_star = rating_counts.get(5, 0) / total
-        one_star = rating_counts.get(1, 0) / total
+        five_star = float(rating_counts.get(5, 0)) / float(max(total, 1))
+        one_star = float(rating_counts.get(1, 0)) / float(max(total, 1))
         extreme_ratio = five_star + one_star
         unique_ratings = len(rating_counts)
 
         avg_rating = np.mean(ratings)
         std_rating = np.std(ratings)
 
-        score = 70.0  # Base
+        score: float = 70.0  # Base
 
         # All same rating is suspicious
         if unique_ratings == 1:
@@ -477,8 +478,8 @@ class TemporalAnalyzer:
         score = 75.0  # Base
 
         # Check for suspiciously rapid reviews
-        rapid_count = sum(1 for i in intervals_hours if i < 0.5)  # Less than 30 min apart
-        rapid_ratio = rapid_count / len(intervals_hours)
+        rapid_count = sum(1 for i in intervals_hours if float(i) < 0.5)  # Less than 30 min apart
+        rapid_ratio = float(rapid_count) / float(max(len(intervals_hours), 1))
 
         if rapid_ratio > 0.7:
             score = 15.0
@@ -506,12 +507,12 @@ class TemporalAnalyzer:
             score = max(score, 80.0)
 
         return {
-            "score": score,
-            "burst_detected": rapid_ratio > 0.3,
-            "rapid_ratio": round(rapid_ratio, 2),
-            "avg_interval_hours": round(avg_interval, 1),
-            "total_span_hours": round(total_span_hours, 1),
-            "flags": flags
+            "score": float(score),
+            "burst_detected": bool(rapid_ratio > 0.3),
+            "rapid_ratio": float(round(float(rapid_ratio), 2)),
+            "avg_interval_hours": float(round(float(avg_interval), 1)),
+            "total_span_hours": float(round(float(total_span_hours), 1)),
+            "flags": list(flags)
         }
 
 
@@ -571,11 +572,11 @@ class MetadataAnalyzer:
         score = max(5, min(95, score))
 
         return {
-            "score": score,
-            "verified_ratio": round(verified_ratio, 2),
-            "avg_length_words": round(avg_length, 0),
-            "helpful_engagement": round(has_any_helpful / total, 2) if total > 0 else 0,
-            "flags": flags
+            "score": float(score),
+            "verified_ratio": float(round(float(verified_ratio), 2)),
+            "avg_length_words": float(round(float(avg_length), 0)),
+            "helpful_engagement": float(round(float(has_any_helpful) / float(max(total, 1)), 2)) if total > 0 else 0.0,
+            "flags": list(flags)
         }
 
 
@@ -618,27 +619,33 @@ class TrustScoreCalculator:
                 "cross_review": 0.30,
                 "temporal": 0.15,
                 "metadata": 0.25
+            },
+            "software": {
+                "text": 0.35,
+                "cross_review": 0.25,
+                "temporal": 0.25,
+                "metadata": 0.15
             }
         }
 
     def bayesian_adjustment(self, raw_score: float, review_count: int) -> float:
         """Light Bayesian smoothing - only for very small review counts"""
         # m = minimum reviews for full confidence
-        m = 10
+        m = 10.0
         neutral = 55.0  # Neutral midpoint
 
-        if review_count < m:
-            weight = review_count / m
-            adjusted = (weight * raw_score) + ((1 - weight) * neutral)
-            return adjusted
-        return raw_score
+        if float(review_count) < m:
+            weight = float(review_count) / m
+            adjusted = (weight * raw_score) + ((1.0 - weight) * neutral)
+            return float(adjusted)
+        return float(raw_score)
 
     def calculate(self, product_id: str, reviews: List[Dict],
                   category: str = "default") -> TrustScoreResponse:
         """Main trust score calculation"""
 
-        weights = self.category_weights.get(category, self.category_weights["default"])
-        all_flags = []
+        weights = dict(self.category_weights.get(category, self.category_weights["default"]))
+        all_flags: List[str] = []
 
         # 1. Text Quality Analysis (per-review, then aggregate)
         text_scores = []
@@ -657,8 +664,8 @@ class TrustScoreCalculator:
 
         # 2. Cross-Review Pattern Analysis
         cross_result = self.cross_analyzer.analyze(reviews)
-        S_cross = cross_result['overall']
-        all_flags.extend(cross_result['flags'])
+        S_cross: float = float(cross_result['overall'])
+        all_flags.extend(list(cross_result['flags']))
 
         # 3. Temporal Analysis
         temporal_result = self.temporal_analyzer.analyze(reviews)
@@ -696,28 +703,28 @@ class TrustScoreCalculator:
         # Adjusted rating
         ratings = [r.get('rating', 3) for r in reviews]
         if ratings:
-            trust_factor = T_final / 100
-            raw_avg = np.mean(ratings)
+            trust_factor = float(T_final) / 100.0
+            raw_avg = float(np.mean(ratings))
             # Blend: if trust is high, rating stays close to raw average
             # If trust is low, pull the rating toward neutral (3.0)
-            adjusted_rating = raw_avg * trust_factor + 3.0 * (1 - trust_factor)
-            adjusted_rating = max(1, min(5, adjusted_rating))
+            adjusted_rating = raw_avg * trust_factor + 3.0 * (1.0 - trust_factor)
+            adjusted_rating = max(1.0, min(5.0, adjusted_rating))
         else:
             adjusted_rating = 3.0
 
-        return TrustScoreResponse(
-            trust_score=round(T_final, 1),
-            adjusted_rating=round(adjusted_rating, 2),
-            breakdown={
-                "content_quality": round(S_text, 1),
-                "review_patterns": round(S_cross, 1),
-                "temporal_integrity": round(S_temp, 1),
-                "metadata_signals": round(S_meta, 1),
-                "weights_used": weights
+        return TrustScoreResponse.model_validate({
+            "trust_score": float(round(float(T_final), 1)),
+            "adjusted_rating": float(round(float(adjusted_rating), 2)),
+            "breakdown": {
+                "content_quality": float(round(float(S_text), 1)),
+                "review_patterns": float(round(float(S_cross), 1)),
+                "temporal_integrity": float(round(float(S_temp), 1)),
+                "metadata_signals": float(round(float(S_meta), 1)),
+                "weights_used": dict(weights)
             },
-            flags=all_flags[:8],  # Max 8 flags
-            confidence=round(confidence, 2)
-        )
+            "flags": list(all_flags)[:8],  # Max 8 flags
+            "confidence": float(round(float(confidence), 2))
+        })
 
 
 # Initialize calculator

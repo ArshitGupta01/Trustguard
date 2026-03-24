@@ -34,29 +34,11 @@ Test: http://localhost:8000/health
 5. Navigate to Amazon product page
 6. TrustGuard badge should appear
 
-### 3. Production Deployment
-
-```bash
-# Navigate to project root
-cd .
-docker-compose up -d --build
-```
-
-### 4. Restarting
-
-If you restart your computer or stop the containers, simply run:
-```bash
-# Navigate to project root
-cd .
-docker-compose up -d
-```
-
 ## File Checklist
 
 - [ ] backend/requirements.txt
 - [ ] backend/app.py
 - [ ] backend/residential_proxy.py
-- [ ] backend/Dockerfile
 - [ ] extension/manifest.json
 - [ ] extension/content.js
 - [ ] extension/background.js
@@ -67,5 +49,5 @@ docker-compose up -d
 - [ ] extension/icons/icon16.png
 - [ ] extension/icons/icon48.png
 - [ ] extension/icons/icon128.png
-- [ ] docker-compose.yml
-- [ ] nginx.conf
+- [x] .gitignore
+- [x] README.md

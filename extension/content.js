@@ -79,6 +79,28 @@
             reviewDate: ['._2sc7ZR._2V5EHH', '._3n8db9'],
             productTitle: ['.B_NuCI', '.product-title'],
             asinFromUrl: /[?&]pid=([A-Za-z0-9_-]+)/i
+        },
+        playstore: {
+            reviewContainer: ['.RHo1pe'],
+            reviewText: ['.h3bYgc'],
+            rating: ['.iPNoBe div[aria-label]'],
+            reviewerName: ['.X5079c'],
+            verifiedPurchase: [], // Playstore doesn't have an AVP badge like Amazon
+            reviewDate: ['.bp9SZb'],
+            helpfulVotes: ['.R0iScd'],
+            productTitle: ['h1.Fd93ec', '.VfPpkd-GlS6sc-PR7oYc'],
+            asinFromUrl: /[?&]id=([a-zA-Z0-9._]+)/i
+        },
+        myntra: {
+            reviewContainer: ['.user-review-main'],
+            reviewText: ['.user-review-reviewText'],
+            rating: ['.user-review-rating'],
+            reviewerName: ['.user-review-userName'],
+            verifiedPurchase: [],
+            reviewDate: ['.user-review-date'],
+            helpfulVotes: ['.user-review-usefulCount'],
+            productTitle: ['.pdp-title', '.pdp-name'],
+            asinFromUrl: /\/(\d+)\/buy/i
         }
     };
 
@@ -86,6 +108,8 @@
         const host = window.location.hostname;
         if (host.includes('amazon')) return 'amazon';
         if (host.includes('flipkart')) return 'flipkart';
+        if (host.includes('play.google.com')) return 'playstore';
+        if (host.includes('myntra.com')) return 'myntra';
         return null;
     }
 
@@ -153,8 +177,16 @@
         return Math.abs(hash).toString(16).padStart(16, '0');
     }
 
-    function parseRating(text) {
-        if (!text) return 3;
+    function parseRating(el, platform) {
+        if (!el) return 3;
+        const text = el.innerText || '';
+        
+        if (platform === 'playstore') {
+            const ariaLabel = el.getAttribute('aria-label') || '';
+            const match = ariaLabel.match(/(\d+)/);
+            return match ? parseFloat(match[1]) : 3;
+        }
+
         const match = text.match(/(\d+(\.\d+)?)/);
         return match ? parseFloat(match[1]) : 3;
     }
@@ -245,7 +277,7 @@
 
                 reviews.push({
                     text: text,
-                    rating: parseRating(ratingEl ? ratingEl.innerText : ''),
+                    rating: parseRating(ratingEl, platform),
                     verified: !!verifiedEl || (container.innerText.includes("Verified Purchase")),
                     timestamp: parseDate(dateEl ? dateEl.innerText : ''),
                     reviewer_id: hashString(nameEl ? nameEl.innerText : `unknown_${index}`),
@@ -427,9 +459,17 @@
                 }
             }
 
-            // Extract reviews
-            const reviews = extractReviews();
-            console.log(`TrustGuard: Extracted ${reviews.length} reviews`);
+            // Scroll to load more reviews if needed (but don't wait too long)
+            if (reviews.length < 20) {
+                console.log('TrustGuard: Few reviews found, attempting to scroll...');
+                await scrollForReviews();
+                // Re-extract reviews after scrolling
+                const moreReviews = extractReviews();
+                if (moreReviews.length > reviews.length) {
+                    console.log(`TrustGuard: Scrolled and found ${moreReviews.length} reviews`);
+                    reviews.splice(0, reviews.length, ...moreReviews);
+                }
+            }
 
             if (reviews.length === 0) {
                 console.warn('TrustGuard: No reviews found on page');
@@ -516,8 +556,9 @@
         if (!title) return 'default';
         const t = title.toLowerCase();
         if (t.includes('book') || t.includes('novel') || t.includes('kindle')) return 'books';
-        if (t.includes('phone') || t.includes('laptop') || t.includes('electronic') || t.includes('computer')) return 'electronics';
+        if (t.includes('phone') || t.includes('laptop') || t.includes('electronic') || t.includes('computer') || t.includes('camera')) return 'electronics';
         if (t.includes('shoe') || t.includes('cloth') || t.includes('fashion') || t.includes('wear')) return 'fashion';
+        if (t.includes('app') || t.includes('game') || t.includes('software') || t.includes('messenger') || t.includes('tool')) return 'software';
         return 'default';
     }
 
@@ -629,6 +670,33 @@
                 setTimeout(analyzeProduct, 1000);
             });
         }
+    }
+
+    async function scrollForReviews() {
+        return new Promise((resolve) => {
+            const platform = getPlatform();
+            if (platform === 'amazon') {
+                // For Amazon, the "Top reviews" are usually enough for initial score,
+                // but we can try to scroll to the review section
+                const reviewHeader = document.querySelector('#reviews-medley-footer');
+                if (reviewHeader) {
+                    reviewHeader.scrollIntoView({ behavior: 'smooth' });
+                }
+            } else {
+                window.scrollTo({
+                    top: document.body.scrollHeight / 2,
+                    behavior: 'smooth'
+                });
+            }
+
+            setTimeout(() => {
+                window.scrollTo({
+                    top: document.body.scrollHeight,
+                    behavior: 'smooth'
+                });
+                setTimeout(resolve, 1500); // Wait for lazy load
+            }, 1000);
+        });
     }
 
     // Initialize
