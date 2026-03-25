@@ -54,6 +54,7 @@ class TrustScoreResponse(BaseModel):
     breakdown: Dict
     flags: List[str]
     confidence: float
+    qwen_summary: Optional[str] = None
 
 # ==================== HEURISTIC ANALYSIS ENGINE ====================
 
@@ -785,7 +786,7 @@ async def analyze_product(data: ReviewInput):
             )
             qwen_text = query_qwen(summary_prompt, max_tokens=150, temperature=0.25)
             if qwen_text:
-                result.flags.append("Qwen external summary available")
+                result.qwen_summary = qwen_text
                 # attach as audit log
                 await insert_audit({
                     "product_id": data.product_id,

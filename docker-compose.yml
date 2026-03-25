@@ -1,0 +1,53 @@
+version: '3.9'
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: trustguard-mongo
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: trustguard-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    environment:
+      - OLLAMA_MODEL=qwen2.5:latest
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+    command: ["ollama", "serve", "--host", "0.0.0.0"]
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: trustguard-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENABLE_ML=1
+      - MODEL_TRAIN_THRESHOLD=30
+      - MONGO_URI=mongodb://mongodb:27017/trustguard
+      - OLLAMA_URL=http://ollama:11434
+      - OLLAMA_MODEL=qwen2.5:latest
+      - LOG_LEVEL=INFO
+    depends_on:
+      - mongodb
+      - ollama
+    volumes:
+      - ./backend:/app
+
+volumes:
+  mongo_data:

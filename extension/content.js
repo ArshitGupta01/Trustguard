@@ -326,7 +326,8 @@
         badge.id = 'trustguard-badge';
         badge.className = `trustguard-badge ${getScoreClass(score)}`;
 
-        const flagList = flags.map(f => `<li>${f}</li>`).join('');
+        const displayFlags = (flags || []).filter(f => f !== 'Qwen external summary available');
+        const flagList = displayFlags.map(f => `<li>${escapeHtml(f)}</li>`).join('');
 
         badge.innerHTML = `
       <div class="tg-header">
@@ -338,13 +339,20 @@
         <div class="tg-rating-bar">
           <div class="tg-rating-fill" style="width: ${score}%"></div>
         </div>
-        ${flags.length > 0 ? `<ul class="tg-flags">${flagList}</ul>` : ''}
+        ${displayFlags.length > 0 ? `<ul class="tg-flags">${flagList}</ul>` : ''}
         <div class="tg-footer">Click for details</div>
       </div>
     `;
 
         badge.addEventListener('click', showDetailedAnalysis);
         return badge;
+    }
+
+    function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
     function getScoreClass(score) {
@@ -423,7 +431,16 @@
           ${trustScoreData.flags && trustScoreData.flags.length > 0 ? `
             <div class="tg-flags-section">
               <h3>⚠️ Warnings</h3>
-              <ul>${trustScoreData.flags.map(f => `<li>${f}</li>`).join('')}</ul>
+              <ul>${trustScoreData.flags
+                  .filter(f => f !== 'Qwen external summary available')
+                  .map(f => `<li>${escapeHtml(f)}</li>`)
+                  .join('')}</ul>
+            </div>
+          ` : ''}
+          ${trustScoreData.qwen_summary ? `
+            <div class="tg-qwen-summary">
+              <h3>Qwen Summary</h3>
+              <p>${escapeHtml(trustScoreData.qwen_summary)}</p>
             </div>
           ` : ''}
           <div class="tg-adjusted-rating">
@@ -603,7 +620,8 @@
                 sendResponse({
                     success: true,
                     reviewCount: reviews.length,
-                    asin: currentASIN
+                    asin: currentASIN,
+                    qwen_summary: trustScoreData?.qwen_summary || null
                 });
             }).catch(error => {
                 sendResponse({
