@@ -783,7 +783,9 @@ async def analyze_product(data: ReviewInput):
                 "Identify suspicious patterns in these reviews and provide a short 2-sentence assessment:\n" +
                 "\n".join([f"- [{r.get('rating', '?')}] {r.get('text','')[:120]}" for r in data.reviews[:10]])
             )
-            qwen_text = query_qwen(summary_prompt, max_tokens=150, temperature=0.25)
+            # Use await for the refactored async query_qwen
+            qwen_text = await query_qwen(summary_prompt, max_tokens=150, temperature=0.25)
+            
             if qwen_text:
                 result.qwen_summary = qwen_text
                 # attach as audit log
@@ -847,6 +849,39 @@ async def label_review(label: LabelInput):
 async def list_labels(limit: int = 100):
     results = await get_labels(limit=limit)
     return {"count": len(results), "labels": results}
+
+
+@app.post("/analyze_reviews_batch")
+async def analyze_reviews_batch(data: Dict[str, Any]):
+    """
+    Experimental batch analysis for individual reviews
+    Expected format: { "reviews": [ { "text": "...", "verified": bool }, ... ] }
+    """
+    try:
+        reviews = data.get("reviews", [])
+        results = []
+        
+        for r in reviews:
+            text = r.get("text", "")
+            verified = r.get("verified", False)
+            
+            # Use the existing TextAnalyzer for a consistent heuristic score
+            analysis = calculator.text_analyzer.analyze_single(text)
+            
+            # Simple metadata boost if verified
+            if verified:
+                analysis["score"] = min(95, analysis["score"] + 15)
+                analysis["flags"].append("Verified Buyer Boost")
+                
+            results.append({
+                "score": round(analysis["score"], 1),
+                "flags": analysis["flags"][:3]
+            })
+            
+        return {"success": True, "results": results}
+    except Exception as e:
+        logger.error(f"Batch analysis error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.post("/audit")

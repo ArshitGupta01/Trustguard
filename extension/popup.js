@@ -83,7 +83,7 @@ async function checkBackendHealth() {
     const aiStatusText = document.getElementById('aiStatusText');
 
     try {
-        const response = await fetch('http://127.0.0.1:8000/health', { signal: AbortSignal.timeout(3000) });
+        const response = await fetch('http://127.0.0.1:8008/health', { signal: AbortSignal.timeout(3000) });
         if (response.ok) {
             const data = await response.json();
             statusDot.classList.remove('offline');

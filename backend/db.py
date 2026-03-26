@@ -11,7 +11,8 @@ client: Optional[AsyncIOMotorClient] = None
 db = None
 
 if MONGO_URI:
-    client = AsyncIOMotorClient(MONGO_URI)
+    # Add serverSelectionTimeoutMS to fail fast (5s) instead of default 30s/90s hangs
+    client = AsyncIOMotorClient(MONGO_URI, serverSelectionTimeoutMS=5000)
     db = client[MONGO_DB]
 
 

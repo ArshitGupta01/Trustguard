@@ -36,7 +36,7 @@ services:
     container_name: trustguard-backend
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "8008:8000"
     environment:
       - ENABLE_ML=1
       - MODEL_TRAIN_THRESHOLD=30

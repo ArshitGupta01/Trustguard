@@ -1,0 +1,19 @@
+{
+  "product_id": "0123456789abcdef",
+  "reviews": [
+    {
+      "text": "This product is amazing! I highly recommend it to everyone. Best purchase ever.",
+      "rating": 5,
+      "verified": true,
+      "timestamp": "2026-03-25T10:00:00Z",
+      "reviewer_id": "user123",
+      "helpful_votes": 10
+    }
+  ],
+  "metadata": {
+    "platform": "amazon",
+    "category": "electronics",
+    "review_count": 1,
+    "url": "https://www.amazon.com/dp/B00XP0F6E0"
+  }
+}

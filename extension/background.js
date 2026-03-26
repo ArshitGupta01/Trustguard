@@ -1,7 +1,7 @@
 // TrustGuard Service Worker (Manifest V3)
 // CRITICAL: All API calls MUST go through here, not content scripts
 
-const API_ENDPOINT = 'http://127.0.0.1:8000/analyze';
+const API_ENDPOINT = 'http://127.0.0.1:8008/analyze';
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
 // Keep service worker alive
@@ -38,7 +38,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
 
     if (request.action === 'evaluate_reviews_ai') {
-        fetch('http://127.0.0.1:8000/analyze_reviews_batch', {
+        fetch('http://127.0.0.1:8008/analyze_reviews_batch', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -140,7 +140,7 @@ chrome.webRequest?.onHeadersReceived?.addListener(
         return { responseHeaders: headers };
     },
     {
-        urls: ["http://localhost:8000/*", "http://127.0.0.1:8000/*"]
+        urls: ["http://localhost:8000/*", "http://127.0.0.1:8000/*", "http://127.0.0.1:8008/*"]
     },
     ["responseHeaders", "extraHeaders"]
 );
