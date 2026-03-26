@@ -19,16 +19,16 @@ def test_mongodb_connection():
     """Test MongoDB connection"""
     from db import db
     if db is not None:
-        print("✅ MongoDB connected to database:", db.name)
+        print(" MongoDB connected to database:", db.name)
         try:
             collections = db.list_collection_names()
-            print("📋 Existing collections:", collections)
+            print(" Existing collections:", collections)
             return True
         except Exception as e:
-            print("❌ MongoDB connection error:", e)
+            print(" MongoDB connection error:", e)
             return False
     else:
-        print("❌ MongoDB not connected (check if MongoDB is running)")
+        print(" MongoDB not connected (check if MongoDB is running)")
         return False
 
 def test_ollama_connection():
@@ -37,7 +37,7 @@ def test_ollama_connection():
     try:
         result = query_qwen("Hello, test message", max_tokens=50)
         if result and "OLLAMA error" not in result:
-            print("✅ Ollama Qwen connected, response:", result[:100] + "...")
+            print(" Ollama Qwen connected, response:", result[:100] + "...")
             return True
         else:
             print("❌ Ollama connection failed:", result)
@@ -76,7 +76,7 @@ def test_analysis_endpoint():
 
     if response.status_code == 200:
         result = response.json()
-        print("✅ Analysis successful:")
+        print("  Analysis successful:")
         print(f"  Trust Score: {result['trust_score']}")
         print(f"  Adjusted Rating: {result['adjusted_rating']}")
         print(f"  Flags: {result['flags']}")
@@ -100,7 +100,7 @@ def test_label_endpoint():
 
     if response.status_code == 200:
         result = response.json()
-        print("✅ Label stored:", result)
+        print(" Label stored:", result)
         return True
     else:
         print("❌ Label failed:", response.text)
@@ -140,9 +140,9 @@ def main():
     print(f"  Labeling: {'✅' if label_ok else '❌'}")
 
     if mongo_ok and ollama_ok:
-        print("\n🎉 All integrations working! Ready for production.")
+        print("\n All integrations working! Ready for production.")
     else:
-        print("\n⚠️  Some integrations need setup:")
+        print("\n  Some integrations need setup:")
         if not mongo_ok:
             print("   - Install/start MongoDB: https://docs.mongodb.com/manual/installation/")
         if not ollama_ok:
