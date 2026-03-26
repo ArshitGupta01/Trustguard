@@ -348,7 +348,7 @@ If you want to contribute:
 4. Push and open a PR
 
 Some ideas for contributions:
-- Support for more platforms (eBay, Walmart, etc.)
+- Support for more platforms (Meesho, Myntra, etc.)
 - Better AI prompts for the Qwen analysis
 - Unit tests for the analyzer classes
 - Improving the review scraper selectors as sites update their DOM
