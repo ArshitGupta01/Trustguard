@@ -40,8 +40,6 @@ The badge uses an SVG ring visualization and expands into a full modal with per-
 ---
 ## Demo Images
 ![WhatsApp Image 2026-03-26 at 1 00 09 PM](https://github.com/user-attachments/assets/9b15953e-d809-42df-9c4a-0611c9f019f9)
-![WhatsApp Image 2026-03-26 at 1 00 09 PM](https://github.com/user-attachments/assets/9b15953e-d809-42df-9c4a-0611c9f019f9)
-![WhatsApp Image 2026-03-26 at 1 00 08 PM](https://github.com/user-attachments/assets/92f89390-3dc3-41e1-bbdb-7a93d1a2d58f)
 ![WhatsApp Image 2026-03-26 at 1 00 08 PM](https://github.com/user-attachments/assets/92f89390-3dc3-41e1-bbdb-7a93d1a2d58f)
 
 
