@@ -220,4 +220,25 @@
 }
 
 /* ── Footer CTA ── */
-.tge-verdict-footer { margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 11px; text-align: center; color: #646882; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+.tge-verdict-footer { 
+    margin-top: 16px; 
+    padding-top: 14px; 
+    border-top: 1px solid rgba(255,255,255,0.05); 
+    font-size: 11px; 
+    text-align: center; 
+    color: #646882; 
+    font-weight: 700; 
+    text-transform: uppercase; 
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tge-verdict-footer:hover {
+    color: #00d2ff;
+    text-decoration: underline;
+    background: rgba(0, 210, 255, 0.05);
+    border-radius: 0 0 12px 12px;
+    margin-bottom: -16px; /* Offset parent padding */
+    padding-bottom: 16px;
+}

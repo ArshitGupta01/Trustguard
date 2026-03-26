@@ -10,6 +10,8 @@
     let analysisInProgress = false;
     let trustScoreData = null;
     let observerInitialized = false;
+    let loadingInterval = null;
+    let loadingStartTime = null;
 
     // Enhanced selectors for better detection
     const SELECTORS = {
@@ -339,7 +341,61 @@
         return badge;
     }
 
+    function showLoadingBadge() {
+        const existing = document.getElementById('trustguard-badge');
+        if (existing) existing.remove();
+
+        let target = document.querySelector('#titleBlock, #title_feature_div, .B_NuCI, [data-hook="product-title"]');
+        if (!target) {
+            const titleSelectors = ['h1', '.product-title', '#productTitle', '[data-hook="product-title"]'];
+            for (const sel of titleSelectors) {
+                target = document.querySelector(sel);
+                if (target) break;
+            }
+        }
+
+        if (!target) return;
+
+        const badge = document.createElement('div');
+        badge.id = 'trustguard-badge';
+        badge.className = 'trustguard-badge tg-loading-badge';
+        
+        badge.innerHTML = `
+            <div class="tg-badge-inner" style="padding: 16px 24px;">
+                <div class="tg-loading-spinner"></div>
+                <div class="tg-badge-info" style="margin-left: 12px;">
+                    <div class="tg-loading-text">Analysis is being prepared...</div>
+                    <div class="tg-loading-subtext">Deep AI scanning active <span id="tg-analysis-timer" class="tg-timer">00s</span></div>
+                </div>
+            </div>
+        `;
+
+        if (target.parentNode) {
+            target.parentNode.insertBefore(badge, target.nextSibling);
+            console.log('TrustGuard: Loading badge injected');
+        }
+
+        stopLoading(); // Clear any existing
+        loadingStartTime = Date.now();
+        const timerEl = badge.querySelector('#tg-analysis-timer');
+        
+        loadingInterval = setInterval(() => {
+            const seconds = Math.floor((Date.now() - loadingStartTime) / 1000);
+            if (timerEl) {
+                timerEl.textContent = `${seconds.toString().padStart(2, '0')}s`;
+            }
+        }, 1000);
+    }
+
+    function stopLoading() {
+        if (loadingInterval) {
+            clearInterval(loadingInterval);
+            loadingInterval = null;
+        }
+    }
+
     function injectBadge(data) {
+        stopLoading();
         const existing = document.getElementById('trustguard-badge');
         if (existing) existing.remove();
 
@@ -524,6 +580,7 @@
         analysisInProgress = true;
 
         console.log(`TrustGuard: Starting analysis for ASIN: ${asin}`);
+        showLoadingBadge();
 
         try {
             const cacheKey = `tg_${asin}`;
@@ -615,6 +672,7 @@
             });
         } finally {
             analysisInProgress = false;
+            stopLoading();
         }
     }
 

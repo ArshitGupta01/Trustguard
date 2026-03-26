@@ -385,10 +385,17 @@
 
         // Clicking opens the detailed modal (triggers the old badge's click handler)
         card.style.cursor = 'pointer';
-        card.addEventListener('click', () => {
-            // Trigger the modal from content.js if available
-            if (oldBadge) {
-                oldBadge.click();
+        card.addEventListener('click', (e) => {
+            // Re-query for the badge in case it was added/removed/updated
+            const badge = document.getElementById('trustguard-badge');
+            if (badge) {
+                console.log("TrustGuard Extra: Triggering detailed analysis modal via badge click.");
+                badge.click();
+            } else {
+                console.warn("TrustGuard Extra: Could not find TrustGuard badge (#trustguard-badge) to trigger modal.");
+                // Fallback: Notify the user or try to find anything clickable from TrustGuard
+                const fallback = document.querySelector('.trustguard-badge, .badge-inner');
+                if (fallback) fallback.click();
             }
         });
 
