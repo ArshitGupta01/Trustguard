@@ -1,6 +1,6 @@
 # TrustGuard: Hybrid-AI Fake Review Detector 🛡️
 
-TrustGuard is an advanced browser ecosystem designed to identify fake and suspicious reviews on major e-commerce platforms (Amazon, Flipkart, etc.) using a **Hybrid Trust Score Algorithm** and **Large Language Models**.
+TrustGuard is an advanced browser ecosystem designed to identify fake and suspicious reviews on major e-commerce platforms (Amazon, etc.) using a **Hybrid Trust Score Algorithm** and **Large Language Models**.
 
 ---
 
