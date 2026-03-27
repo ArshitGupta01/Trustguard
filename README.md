@@ -8,7 +8,7 @@ No cloud, no subscriptions, no data leaving your computer.
 
 ## Why this exists
 
-A huge chunk of online reviews are fake — paid placements, bot-generated text, coordinated campaigns. You've probably seen it: a product with 4.5 stars where every review says "best product ever!!!" with zero specifics.
+A huge chunk of online reviews are fake - paid placements, bot-generated text, coordinated campaigns. You've probably seen it: a product with 4.5 stars where every review says "best product ever!" with zero specifics.
 
 The problem is that spotting this manually takes forever, and most existing tools either:
 - Use basic keyword matching that's easy to game
